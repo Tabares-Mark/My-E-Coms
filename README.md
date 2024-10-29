@@ -1,1 +1,1 @@
-# My-E-Coms
+This will be my solo E-commerce case.
