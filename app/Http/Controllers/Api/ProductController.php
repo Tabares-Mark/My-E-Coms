@@ -91,47 +91,64 @@ class ProductController extends Controller{
 
 
     //create a product
-    public function store(Request $request){
+    public function store(Request $request) {
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|string|max:255',
+        'price' => 'required|integer',
+        'quantity' => 'required|integer',
+        'category' => 'required|string|max:255',
+        'description' => 'required',
+    ]);
 
-   $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'price' => 'required|integer',
-            'quantity' => 'required|integer',
-            'category' => 'required|string|max:255',
-            'description' => 'required',
-            'barcode' => 'required|string|max:255',
-            ]);
+        if ($validator->fails()) {
+            return response()->json([
+            'message' => 'All fields are mandatory',
+            'error' => $validator->messages()
+        ], 422);
+    }
 
+        $barcode = $request->barcode ?? $this->generateUniqueBarcode();
 
-    if($validator->fails()){
-    return response()->json(
-        ['message'=> 'All fields are mandatory',
-         'error' => $validator->messages()],
-         422);
-        }       
+        $existingProduct = Product::where('name', $request->name)
+        ->where('price', $request->price)
+        ->where('category', $request->category)
+        ->where('description', $request->description)
+        ->first();
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|integer',
-            'quantity' => 'required|integer',
-            'category' => 'required|string|max:255',
-            'description' => 'required',
-            'barcode' => 'required|string|max:255',
-        ]);
+        if ($existingProduct) {
+            $existingProduct->quantity += $request->quantity;
+            $existingProduct->save();
 
-       $product = Product::create([
-            'name' => $request->name,
-            'price' => $request->price,
-            'quantity' => $request->quantity,
-            'category' => $request->category,
-            'description' => $request->description,
-            'barcode' => $request->barcode
-        ]);
+            return response()->json([
+                'message' => 'Product quantity updated successfully',
+                'data' => new ProductResource($existingProduct)
+            ], 200);
+        } 
+    
+        else {
+        $product = Product::create([
+                'name' => $request->name,
+                'price' => $request->price,
+                'quantity' => $request->quantity,
+                'category' => $request->category,
+                'description' => $request->description,
+                'barcode' => $barcode
+            ]    );
 
-        return response()->json([
-            'message' => 'Product created successfully',
-            'data' => new ProductResource($product) 
-        ], 200);    
+            return response()->json([
+                'message' => 'Product created successfully',
+                'data' => new ProductResource($product)
+            ], 201);
+        }
+    }
+
+    // Function to generate a unique barcode
+    private function generateUniqueBarcode() {
+        do {
+            $barcode = strtoupper(bin2hex(random_bytes(6)));
+        } while (Product::where('barcode', $barcode)->exists());
+
+        return $barcode;
     }
 
     //show a spsific product based on ID
@@ -141,48 +158,39 @@ class ProductController extends Controller{
         
     }
     //update details about the product
-    public function update(Product $product, Request $request){
+    public function update(Product $product, Request $request) {
+    $validator = Validator::make($request->all(), [
+        'name' => 'string|max:255',
+        'price' => 'integer',
+        'quantity' => 'integer',
+        'category' => 'string|max:255',
+        'description' => 'string',
+    ]);
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'price' => 'required|integer',
-            'quantity' => 'required|integer',
-            'category' => 'required|string|max:255',
-            'description' => 'required',
-            'barcode' => 'required|string|max:255',
-            ]);
-
-
-    if($validator->fails()){
-    return response()->json(
-        ['message'=> 'All fields are mandatory',
-         'error' => $validator->messages()],
-         422);
-        }       
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|integer',
-            'quantity' => 'required|integer',
-            'category' => 'required|string|max:255',
-            'description' => 'required',
-            'barcode' => 'required|string|max:255',
-        ]);
-
-       $product->update([
-            'name' => $request->name,
-            'price' => $request->price,
-            'quantity' => $request->quantity,
-            'category' => $request->category,
-            'description' => $request->description,
-            'barcode' => $request->barcode
-        ]);
-
+    if ($validator->fails()) {
         return response()->json([
-            'message' => 'Product Updated successfully',
-            'data' => new ProductResource($product) 
-        ], 200);    
+            'message' => 'Invalid input',
+            'errors' => $validator->messages()
+        ], 422);
     }
+
+    $product->fill($request->only([
+        'name',
+        'price',
+        'quantity',
+        'category',
+        'description',
+    ]));
+
+    $product->save();
+
+    return response()->json([
+        'message' => 'Product updated successfully',
+        'data' => new ProductResource($product)
+    ], 200);
+}
+
+
 
     //deletes a product
     public function destroy(Product $product){
