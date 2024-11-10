@@ -1,3 +1,4 @@
+
 import React from 'react'
 import { useState } from 'react'
 import ProductList from './subCompo/ProductList'
@@ -8,11 +9,7 @@ const Dashboard = () => {
     //FOR PRODUCT SORTING
     const [url, setUrl] = useState('http://127.0.0.1:8000/api/product');
 
-    const InitialOrder = () => setUrl('http://127.0.0.1:8000/api/product');
-    const PriceOrderAsc = () => setUrl('http://127.0.0.1:8000/api/products/ascending');
-    const PriceOrderDesc = () => setUrl('http://127.0.0.1:8000/api/products/descending');
-
-    //FOR PRODUCT CREATION
+     //FOR PRODUCT CREATION
     const [showCreate, setShowCreate] = useState(false);
 
     const toggleCreate = () => {
@@ -21,8 +18,6 @@ const Dashboard = () => {
 
   return (
    <>
-    <div>Header</div>
-
     <br/>
 
     <button onClick={toggleCreate}>Add New Product</button>
@@ -38,16 +33,9 @@ const Dashboard = () => {
 
 
 
-    <div>
-        <h1>Product List</h1>
-        <button onClick={InitialOrder}>Initial Order</button>
-        <button onClick={PriceOrderAsc}>Ascending By Price</button>
-        <button onClick={PriceOrderDesc} >Descending By Price</button>
-
+    <div>       
         <ProductList url={url} />
-        </div>
-
-
+    </div>
    </>
   )
 }

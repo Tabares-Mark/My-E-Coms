@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Delete from './Delete';
 import Update from './Update';
+import Search from './Search';
 
 function ProductList({ url }) {
   const [products, setProducts] = useState([]);
@@ -9,15 +10,14 @@ function ProductList({ url }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showUpdate, setShowUpdate] = useState(false);
   const [sortOrder, setSortOrder] = useState('initial');
-  const [categories, setCategories] = useState([]); // State for categories
-  const [selectedCategory, setSelectedCategory] = useState(''); // State for selected category
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   const fetchProducts = async () => {
     const token = localStorage.getItem('token');
     
     let sortedUrl = url;
 
-    // Determine the URL based on sorting and category filtering
     if (sortOrder === 'ascending') {
       sortedUrl = 'http://127.0.0.1:8000/api/products/ascending';
     } else if (sortOrder === 'descending') {
@@ -46,7 +46,6 @@ function ProductList({ url }) {
     }
   };
 
-  // Fetch categories from the API
   const fetchCategories = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -59,7 +58,7 @@ function ProductList({ url }) {
       });
       if (!response.ok) throw new Error('Fetching Categories Failed');
       const data = await response.json();
-      setCategories(data); // Assuming the response is an array of categories
+      setCategories(data);
     } catch (error) {
       setError(error.message);
     }
@@ -67,8 +66,14 @@ function ProductList({ url }) {
 
   useEffect(() => {
     fetchProducts();
-    fetchCategories(); // Fetch categories on mount
-  }, [url, sortOrder, selectedCategory]); // Add selectedCategory to dependencies
+    fetchCategories();
+  }, [url, sortOrder, selectedCategory]);
+
+  const handleSearchResults = (searchResults) => {
+    setProducts(searchResults);
+    setSortOrder('initial');
+    setSelectedCategory('');
+  };
 
   const handleDeleteSuccess = (deletedId) => {
     setProducts(products.filter(product => product.id !== deletedId));
@@ -89,7 +94,7 @@ function ProductList({ url }) {
   };
 
   const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value); // Update selected category
+    setSelectedCategory(e.target.value);
   };
 
   if (loading) return <p>Loading...</p>;
@@ -98,6 +103,9 @@ function ProductList({ url }) {
   return (
     <div>
       <h1>Product List</h1>
+      
+      <Search onSearchResults={handleSearchResults} />
+
       <label htmlFor="sortOrder">Sort By Price:</label>
       <select id="sortOrder" value={sortOrder} onChange={handleSortChange}>
         <option value="initial">Initial Order</option>
@@ -132,6 +140,7 @@ function ProductList({ url }) {
           </div>
         ))
       )}
+      
       {showUpdate && selectedProduct && (
         <div className="modal">
           <div className="modal-content">

@@ -1,5 +1,4 @@
 
 
 TO IMPLEMENT:
-Search Function
 Styling
