@@ -17,7 +17,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('products/category/{category}', [ProductController::class, 'ProductsByCategory']); // to show products based on category
     Route::get('products/categories', [ProductController::class, 'getCategories']); // show a list of categories
     Route::get('products/search', [ProductController::class, 'search']); // for searching products
-    
+
+    // Logout route
+    Route::post('/logout', [AuthController::class, 'logout']);
+
     // User information route
     Route::get('/user', function (Request $request) {
         return $request->user();
