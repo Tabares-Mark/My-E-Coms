@@ -6,22 +6,25 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Authentication routes
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register/admin', [AuthController::class, 'registerAdmin']);
+Route::post('/register/user', [AuthController::class, 'registerUser']);
 Route::post('/login', [AuthController::class, 'login']);
 
 // Protected routes (requires authentication)
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('product', ProductController::class); // for index, store, show, update, destroy
-    Route::get('products/ascending', [ProductController::class, 'AscendingByPrice']); // for ascending order by price
-    Route::get('products/descending', [ProductController::class, 'DescendingByPrice']); // for descending order by price
-    Route::get('products/category/{category}', [ProductController::class, 'ProductsByCategory']); // to show products based on category
-    Route::get('products/categories', [ProductController::class, 'getCategories']); // show a list of categories
-    Route::get('products/search', [ProductController::class, 'search']); // for searching products
+    Route::get('products', [ProductController::class, 'index']); // Route for the index method
+    Route::get('products/ascending', [ProductController::class, 'AscendingByPrice']);
+    Route::get('products/descending', [ProductController::class, 'DescendingByPrice']);
+    Route::get('products/category/{category}', [ProductController::class, 'ProductsByCategory']);
+    Route::get('products/categories', [ProductController::class, 'getCategories']);
+    Route::get('products/search', [ProductController::class, 'search']);
 
-    // Logout route
+    // Admin-specific routes
+    Route::post('product', [ProductController::class, 'store']);
+    Route::put('product/{product}', [ProductController::class, 'update']);
+    Route::delete('product/{product}', [ProductController::class, 'destroy']);
+
     Route::post('/logout', [AuthController::class, 'logout']);
-
-    // User information route
     Route::get('/user', function (Request $request) {
         return $request->user();
     });

@@ -5,11 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Sanctum\HasApiTokens;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function registerAdmin(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -21,6 +20,25 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'admin', // Assign 'admin' role
+        ]);
+
+        return response()->json(['message' => 'Admin registered successfully!', 'user' => $user], 201);
+    }
+
+    public function registerUser(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'user', // Assign 'user' role
         ]);
 
         return response()->json(['message' => 'User registered successfully!', 'user' => $user], 201);
@@ -41,12 +59,15 @@ class AuthController extends Controller
 
         $token = $user->createToken('MyAppToken')->plainTextToken;
 
-        return response()->json(['message' => 'Login successful', 'token' => $token], 200);
+        return response()->json([
+            'message' => 'Login successful',
+            'token' => $token,
+            'role' => $user->role,
+        ], 200);
     }
 
     public function logout(Request $request)
     {
-        // Revoke the current token
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logout successful'], 200);
