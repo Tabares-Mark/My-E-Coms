@@ -17,4 +17,12 @@ class Product extends Model
     'category',
     'description', 
     'barcode'];
+
+
+    public function carts()
+{
+    return $this->hasMany(Cart::class);
 }
+
+}
+
