@@ -30,10 +30,16 @@ class CartController extends Controller
     return response()->json(['message' => 'Product added to cart', 'cart' => $cart], 200);
 }
 
-
+public function productCount(Request $request) {
+    
+    $Count = Cart::where('user_id', $request->user()->id)->count();
+    return response()->json(['count' => $Count], 200);
+}
     // View cart
     public function viewCart(Request $request)
     {
+
+
         $cartItems = Cart::where('user_id', $request->user()->id)
             ->with('product')
             ->get();

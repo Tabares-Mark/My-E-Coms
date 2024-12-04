@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('cart', [CartController::class, 'viewCart']);
     Route::put('cart/{cartId}', [CartController::class, 'updateCart']);
     Route::post('cart/checkout', [CartController::class, 'checkout']);
+    Route::get('cart/count', [CartController::class, 'productCount']);
 
     // Admin-specific routes
     Route::post('product', [ProductController::class, 'store']);
